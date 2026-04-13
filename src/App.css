@@ -1,3 +1,46 @@
+.submit-nav {
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: var(--warm-white);
+}
+
+.submit-nav-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-style: italic;
+  color: var(--dark-brown);
+  text-decoration: none;
+}
+
+.nav-gallery-btn {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brown);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.nav-gallery-btn:hover {
+  border-color: var(--tan);
+  color: var(--dark-brown);
+}
+
 .page {
   min-height: 100vh;
   display: flex;
