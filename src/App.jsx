@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
-import { supabase } from './lib/supabase'
 import './App.css'
 
 const MAX_PHOTO_MB = 20
@@ -178,9 +178,15 @@ function App() {
 
   return (
     <div className="page">
+      <nav className="submit-nav">
+        <div className="submit-nav-inner">
+          <Link to="/memories" className="nav-logo">Jamie Memories</Link>
+          <Link to="/memories" className="nav-gallery-btn">View memories</Link>
+        </div>
+      </nav>
       <header className="hero">
         <div className="hero-ornament">✦</div>
-        <h1 className="hero-title">Jamie Memories</h1>
+        <h1 className="hero-title">Share a Memory</h1>
         <p className="hero-subtitle">
           Share a photo, a story, a moment — something that captures who Jamie was to you.
           These memories will be treasured by her daughters as they grow up.
