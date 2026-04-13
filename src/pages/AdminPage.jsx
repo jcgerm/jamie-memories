@@ -27,7 +27,7 @@ export default function AdminPage() {
     if (authed) {
       fetch('/.netlify/functions/site-settings')
         .then(r => r.json())
-        .then(data => { if (data.url) setHeroUrl(data.url) })
+        .then(data => { if (data.hero_photo) setHeroUrl(data.hero_photo) })
         .catch(() => {})
     }
   }, [authed])
