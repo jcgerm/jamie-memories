@@ -12,7 +12,7 @@ export default function KidsGalleryPage() {
   const [expanded, setExpanded] = useState({})
 
   useEffect(() => {
-    fetch('/api/gallery-kids')
+    fetch('/.netlify/functions/gallery-kids')
       .then(r => r.json())
       .then(data => {
         setMemories(Array.isArray(data) ? data : [])

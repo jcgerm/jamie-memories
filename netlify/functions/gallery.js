@@ -1,28 +1,20 @@
-// netlify/functions/gallery.js
 const { createClient } = require('@supabase/supabase-js')
 
 exports.handler = async (event) => {
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  )
-
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
   try {
     const { data, error } = await supabase
       .from('submissions')
-      .select('id, created_at, submitter_name, relationship, memory, photo_paths, video_uids, video_link')
+      .select('id,created_at,submitter_name,relationship,memory,photo_paths,video_uids,video_link')
       .eq('approved', true)
       .order('created_at', { ascending: false })
-
     if (error) throw error
-
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
       body: JSON.stringify(data),
     }
   } catch (err) {
-    console.error('Gallery fetch error:', err)
     return { statusCode: 500, body: JSON.stringify({ error: err.message }) }
   }
 }

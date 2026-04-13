@@ -25,7 +25,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authed) {
-      fetch('/api/site-settings')
+      fetch('/.netlify/functions/site-settings')
         .then(r => r.json())
         .then(data => { if (data.url) setHeroUrl(data.url) })
         .catch(() => {})
@@ -43,7 +43,7 @@ export default function AdminPage() {
         reader.onerror = rej
         reader.readAsDataURL(file)
       })
-      const resp = await fetch('/api/upload-hero', {
+      const resp = await fetch('/.netlify/functions/upload-hero', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, base64, contentType: file.type }),
@@ -70,7 +70,7 @@ export default function AdminPage() {
     setLoading(true)
     setChecked(new Set())
     try {
-      const res = await fetch('/api/admin-submissions', {
+      const res = await fetch('/.netlify/functions/admin-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, filter }),
@@ -88,7 +88,7 @@ export default function AdminPage() {
   }, [authed, filter])
 
   const approve = async (id) => {
-    await fetch('/api/admin-action', {
+    await fetch('/.netlify/functions/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'approve', id }),
@@ -100,7 +100,7 @@ export default function AdminPage() {
 
   const reject = async (id) => {
     if (!confirm('Delete this submission permanently?')) return
-    await fetch('/api/admin-action', {
+    await fetch('/.netlify/functions/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
@@ -115,7 +115,7 @@ export default function AdminPage() {
     if (!confirm(`Permanently delete ${checked.size} submission${checked.size > 1 ? 's' : ''}?`)) return
     setBulkDeleting(true)
     await Promise.all([...checked].map(id =>
-      fetch('/api/admin-action', {
+      fetch('/.netlify/functions/admin-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),

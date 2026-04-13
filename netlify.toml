@@ -11,8 +11,5 @@
 [functions]
   node_bundler = "esbuild"
 
-[functions."upload-video"]
-  timeout = 300
-
 [functions."tus-proxy"]
   timeout = 300
