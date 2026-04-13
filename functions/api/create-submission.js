@@ -1,4 +1,5 @@
-import { supabaseClient, json, error, checkMethod } from '../_shared/supabase.js'
+import { supabaseClient, json, error } from '../_shared/supabase.js'
+import { notifyNewSubmission } from '../_shared/notify.js'
 
 export async function onRequestPost(context) {
   try {
@@ -14,6 +15,13 @@ export async function onRequestPost(context) {
       prompt: body.prompt || null,
       approved: false,
     })
+
+    // Fire notification email — never block submission on failure
+    context.waitUntil(
+      notifyNewSubmission(data, context.env).catch(err =>
+        console.error('Notification failed:', err)
+      )
+    )
 
     return json({ id: data.id })
   } catch (err) {
