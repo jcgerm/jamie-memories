@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './GalleryPage.css'
+import HeroPhoto from '../components/HeroPhoto'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
@@ -11,7 +12,7 @@ export default function GalleryPage() {
   const [expanded, setExpanded] = useState({}) // track which long memories are expanded
 
   useEffect(() => {
-    fetch('/.netlify/functions/gallery')
+    fetch('/api/gallery')
       .then(r => r.json())
       .then(data => {
         setMemories(Array.isArray(data) ? data : [])
@@ -54,6 +55,7 @@ export default function GalleryPage() {
       </nav>
 
       <header className="gallery-hero">
+        <HeroPhoto />
         <div className="gallery-hero-ornament">✦</div>
         <h1 className="gallery-hero-title">Memories</h1>
         <p className="gallery-hero-sub">

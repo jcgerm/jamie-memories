@@ -83,7 +83,7 @@ function App() {
 
     // Convert to base64 and send through serverless function
     const base64 = await blobToBase64(compressed)
-    const res = await fetch('/.netlify/functions/upload-photo', {
+    const res = await fetch('/api/upload-photo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ base64, contentType: file.type, path }),
@@ -102,7 +102,7 @@ function App() {
       let streamUid = null
 
       const upload = new tus.Upload(file, {
-        endpoint: '/.netlify/functions/tus-proxy',
+        endpoint: '/api/tus-proxy',
         chunkSize: 5 * 1024 * 1024, // 5MB chunks — safe for Netlify
         retryDelays: [0, 3000, 5000],
         metadata: {
@@ -141,7 +141,7 @@ function App() {
     try {
       // 1. Insert submission record via serverless function (uses service role key)
       setProgressLabel('Saving your memory…')
-      const subRes = await fetch('/.netlify/functions/create-submission', {
+      const subRes = await fetch('/api/create-submission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -180,7 +180,7 @@ function App() {
 
       // 4. Update submission with media paths via serverless function
       setProgressLabel('Finishing up…')
-      await fetch('/.netlify/functions/update-submission', {
+      await fetch('/api/update-submission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: submissionId, photoPaths, videoUids }),

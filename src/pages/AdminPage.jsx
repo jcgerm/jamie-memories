@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import './AdminPage.css'
 
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
@@ -18,6 +18,44 @@ export default function AdminPage() {
   const [checked, setChecked] = useState(new Set())
   const [bulkDeleting, setBulkDeleting] = useState(false)
 
+  // Hero photo state
+  const [heroUrl, setHeroUrl] = useState(null)
+  const [heroUploading, setHeroUploading] = useState(false)
+  const heroInputRef = useRef(null)
+
+  useEffect(() => {
+    if (authed) {
+      fetch('/api/site-settings')
+        .then(r => r.json())
+        .then(data => { if (data.url) setHeroUrl(data.url) })
+        .catch(() => {})
+    }
+  }, [authed])
+
+  const uploadHero = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setHeroUploading(true)
+    try {
+      const base64 = await new Promise((res, rej) => {
+        const reader = new FileReader()
+        reader.onload = () => res(reader.result.split(',')[1])
+        reader.onerror = rej
+        reader.readAsDataURL(file)
+      })
+      const resp = await fetch('/api/upload-hero', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, base64, contentType: file.type }),
+      })
+      const data = await resp.json()
+      if (data.url) setHeroUrl(data.url)
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    }
+    setHeroUploading(false)
+  }
+
   const login = (e) => {
     e.preventDefault()
     if (pw === ADMIN_PASSWORD) {
@@ -32,7 +70,7 @@ export default function AdminPage() {
     setLoading(true)
     setChecked(new Set())
     try {
-      const res = await fetch('/.netlify/functions/admin-submissions', {
+      const res = await fetch('/api/admin-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, filter }),
@@ -50,7 +88,7 @@ export default function AdminPage() {
   }, [authed, filter])
 
   const approve = async (id) => {
-    await fetch('/.netlify/functions/admin-action', {
+    await fetch('/api/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'approve', id }),
@@ -62,7 +100,7 @@ export default function AdminPage() {
 
   const reject = async (id) => {
     if (!confirm('Delete this submission permanently?')) return
-    await fetch('/.netlify/functions/admin-action', {
+    await fetch('/api/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
@@ -77,7 +115,7 @@ export default function AdminPage() {
     if (!confirm(`Permanently delete ${checked.size} submission${checked.size > 1 ? 's' : ''}?`)) return
     setBulkDeleting(true)
     await Promise.all([...checked].map(id =>
-      fetch('/.netlify/functions/admin-action', {
+      fetch('/api/admin-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
@@ -142,6 +180,29 @@ export default function AdminPage() {
         <div className="admin-brand">
           <h2>Remembering Jamie</h2>
           <p>Admin</p>
+        </div>
+
+        <div className="hero-upload-section">
+          <div className="hero-upload-preview" onClick={() => heroInputRef.current?.click()}>
+            {heroUrl
+              ? <img src={heroUrl} alt="Jamie" className="hero-upload-img" />
+              : <div className="hero-upload-placeholder">
+                  <span className="hero-upload-icon">+</span>
+                  <span className="hero-upload-label">Add photo of Jamie</span>
+                </div>
+            }
+            <div className="hero-upload-overlay">
+              {heroUploading ? 'Uploading…' : 'Change photo'}
+            </div>
+          </div>
+          <input
+            ref={heroInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={uploadHero}
+          />
+          <p className="hero-upload-hint">Shown at the top of the gallery</p>
         </div>
 
         <div className="filter-tabs">

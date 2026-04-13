@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import './GalleryPage.css'
 import './KidsGalleryPage.css'
+import HeroPhoto from '../components/HeroPhoto'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
@@ -11,7 +12,7 @@ export default function KidsGalleryPage() {
   const [expanded, setExpanded] = useState({})
 
   useEffect(() => {
-    fetch('/.netlify/functions/gallery-kids')
+    fetch('/api/gallery-kids')
       .then(r => r.json())
       .then(data => {
         setMemories(Array.isArray(data) ? data : [])
@@ -47,6 +48,7 @@ export default function KidsGalleryPage() {
   return (
     <div className="gallery-page kids-page">
       <header className="kids-hero">
+        <HeroPhoto />
         <div className="kids-hero-ornament">✦</div>
         <h1 className="kids-hero-title">For Maya & Sadie</h1>
         <p className="kids-hero-sub">
