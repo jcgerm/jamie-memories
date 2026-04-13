@@ -24,6 +24,7 @@ exports.handler = async (event) => {
         memory: body.memory,
         for_kids: body.forKids,
         video_link: body.videoLink || null,
+        prompt: body.prompt || null,
         approved: false,
       })
       .select()

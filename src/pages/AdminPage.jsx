@@ -238,6 +238,9 @@ export default function AdminPage() {
             </div>
 
             <div className="detail-memory">
+              {selected.prompt && (
+                <p className="detail-prompt">"{selected.prompt}"</p>
+              )}
               <p>{selected.memory}</p>
             </div>
 
