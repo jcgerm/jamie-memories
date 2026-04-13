@@ -52,7 +52,14 @@ function App() {
 
   // Video drop
   const onVideoDrop = useCallback((accepted) => {
-    const newVideos = accepted.map(f => ({ file: f, name: f.name }))
+    const MAX_VIDEO_MB = 500
+    const MAX_VIDEO_BYTES = MAX_VIDEO_MB * 1024 * 1024
+    const valid = accepted.filter(f => f.size <= MAX_VIDEO_BYTES)
+    const tooLarge = accepted.filter(f => f.size > MAX_VIDEO_BYTES)
+    if (tooLarge.length) {
+      alert(`${tooLarge.length} video(s) were over ${MAX_VIDEO_MB}MB and skipped. For longer videos, paste a YouTube or Google Drive link instead.`)
+    }
+    const newVideos = valid.map(f => ({ file: f, name: f.name }))
     setVideos(prev => [...prev, ...newVideos].slice(0, 3))
   }, [])
 
@@ -327,7 +334,7 @@ function App() {
             <div className="dropzone-inner">
               <div className="dropzone-icon">▷</div>
               <p className="dropzone-text">Drop video files here, or tap to choose</p>
-              <p className="dropzone-hint">Up to 3 videos · any format · large files are fine</p>
+              <p className="dropzone-hint">Up to 3 videos · 500MB each max · or paste a link below</p>
             </div>
           </div>
           {videos.length > 0 && (

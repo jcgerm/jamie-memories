@@ -13,7 +13,7 @@ export function supabaseClient(env) {
   }
 
   return {
-    async select(table, filters = {}, columns = '*') {
+    async select(table, filters = {}, columns = '*', options = {}) {
       let qs = `select=${columns}`
       for (const [k, v] of Object.entries(filters)) {
         if (typeof v === 'object' && v.neq !== undefined) {
@@ -22,7 +22,7 @@ export function supabaseClient(env) {
           qs += `&${k}=eq.${v}`
         }
       }
-      qs += '&order=created_at.desc'
+      if (!options.noOrder) qs += '&order=created_at.desc'
       const res = await fetch(`${url}/rest/v1/${table}?${qs}`, { headers })
       return res.json()
     },
@@ -66,6 +66,17 @@ export function supabaseClient(env) {
           body: buffer,
         })
         return res.ok
+      },
+
+      async download(bucket, path) {
+        const res = await fetch(`${url}/storage/v1/object/${bucket}/${path}`, {
+          headers: {
+            'apikey': key,
+            'Authorization': `Bearer ${key}`,
+          },
+        })
+        if (!res.ok) return null
+        return res.arrayBuffer()
       }
     }
   }

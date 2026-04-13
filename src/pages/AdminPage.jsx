@@ -32,6 +32,53 @@ export default function AdminPage() {
     }
   }, [authed])
 
+  // Notification emails
+  const [notifEmails, setNotifEmails] = useState([])
+  const [notifInput, setNotifInput] = useState('')
+  const [notifSaving, setNotifSaving] = useState(false)
+  const [notifSaved, setNotifSaved] = useState(false)
+
+  useEffect(() => {
+    if (authed) {
+      fetch('/.netlify/functions/site-settings')
+        .then(r => r.json())
+        .then(data => {
+          if (data.notification_emails) {
+            setNotifEmails(JSON.parse(data.notification_emails))
+          }
+        })
+        .catch(() => {})
+    }
+  }, [authed])
+
+  const addEmail = () => {
+    const email = notifInput.trim().toLowerCase()
+    if (!email || !email.includes('@')) return
+    if (notifEmails.includes(email)) return
+    setNotifEmails(prev => [...prev, email])
+    setNotifInput('')
+  }
+
+  const removeEmail = (email) => {
+    setNotifEmails(prev => prev.filter(e => e !== email))
+  }
+
+  const saveEmails = async () => {
+    setNotifSaving(true)
+    try {
+      await fetch('/.netlify/functions/save-notification-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, emails: notifEmails }),
+      })
+      setNotifSaved(true)
+      setTimeout(() => setNotifSaved(false), 2000)
+    } catch (err) {
+      alert('Failed to save: ' + err.message)
+    }
+    setNotifSaving(false)
+  }
+
   const uploadHero = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -66,6 +113,27 @@ export default function AdminPage() {
     }
   }
 
+  // Backup status
+  const [backupStatus, setBackupStatus] = useState(null)
+
+  const fetchBackupStatus = async () => {
+    try {
+      const res = await fetch('/.netlify/functions/backup-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD }),
+      })
+      const data = await res.json()
+      setBackupStatus(data)
+    } catch (err) {
+      console.error('Backup status error:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (authed) fetchBackupStatus()
+  }, [authed])
+
   const fetchSubmissions = async () => {
     setLoading(true)
     setChecked(new Set())
@@ -96,6 +164,7 @@ export default function AdminPage() {
     setSubmissions(prev => prev.map(s => s.id === id ? { ...s, approved: true } : s))
     if (selected?.id === id) setSelected(prev => ({ ...prev, approved: true }))
     if (filter === 'pending') setSubmissions(prev => prev.filter(s => s.id !== id))
+    fetchBackupStatus()
   }
 
   const reject = async (id) => {
@@ -205,6 +274,39 @@ export default function AdminPage() {
           <p className="hero-upload-hint">Shown at the top of the gallery</p>
         </div>
 
+        <div className="notif-section">
+          <p className="notif-title">Notify when new memory arrives</p>
+          <div className="notif-input-row">
+            <input
+              type="email"
+              className="notif-input"
+              placeholder="email@example.com"
+              value={notifInput}
+              onChange={e => setNotifInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addEmail()}
+            />
+            <button type="button" className="notif-add-btn" onClick={addEmail}>+</button>
+          </div>
+          {notifEmails.length > 0 && (
+            <div className="notif-list">
+              {notifEmails.map(email => (
+                <div key={email} className="notif-tag">
+                  <span className="notif-email">{email}</span>
+                  <button type="button" className="notif-remove" onClick={() => removeEmail(email)}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            className="notif-save-btn"
+            onClick={saveEmails}
+            disabled={notifSaving}
+          >
+            {notifSaved ? '✓ Saved' : notifSaving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+
         <div className="filter-tabs">
           {['pending', 'approved', 'all'].map(f => (
             <button
@@ -216,6 +318,25 @@ export default function AdminPage() {
             </button>
           ))}
         </div>
+
+        {backupStatus?.available && (
+          <div className="backup-status">
+            <div className="backup-status-row">
+              <span className="backup-dot" />
+              <span className="backup-label">Backup</span>
+              <span className="backup-count">{backupStatus.submissionCount} memories</span>
+            </div>
+            {backupStatus.lastBackedUpAt && (
+              <p className="backup-date">
+                Last: {new Date(backupStatus.lastBackedUpAt).toLocaleDateString()}
+                {backupStatus.lastSubmitterName ? ` · ${backupStatus.lastSubmitterName}` : ''}
+              </p>
+            )}
+            {backupStatus.videoCount > 0 && (
+              <p className="backup-date">{backupStatus.videoCount} video{backupStatus.videoCount !== 1 ? 's' : ''} in manifest</p>
+            )}
+          </div>
+        )}
 
         {/* Bulk action toolbar */}
         {submissions.length > 0 && (

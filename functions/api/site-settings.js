@@ -4,8 +4,11 @@ export async function onRequestGet(context) {
   try {
     const db = supabaseClient(context.env)
     const data = await db.select('site_settings', {}, 'key,value')
-    const heroSetting = Array.isArray(data) ? data.find(r => r.key === 'hero_photo') : null
-    return json({ url: heroSetting?.value || null })
+    const result = {}
+    if (Array.isArray(data)) {
+      for (const row of data) result[row.key] = row.value
+    }
+    return json(result)
   } catch (err) {
     return error(err.message)
   }
