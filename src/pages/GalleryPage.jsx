@@ -48,7 +48,7 @@ export default function GalleryPage() {
     <div className="gallery-page">
       <nav className="gallery-nav">
         <div className="gallery-nav-inner">
-          <Link to="/" className="nav-logo">Jamie Memories</Link>
+          <Link to="/" className="nav-logo">Remembering Jamie</Link>
           <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
         </div>
       </nav>
@@ -187,7 +187,7 @@ export default function GalleryPage() {
         <Link to="/submit" className="gallery-footer-cta">
           Share your own memory of Jamie →
         </Link>
-        <p className="gallery-footer-note">Jamie Memories · Made with love</p>
+        <p className="gallery-footer-note">Remembering Jamie · Made with love</p>
       </footer>
     </div>
   )
