@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 import './AdminPage.css'
 
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
@@ -26,16 +26,17 @@ export default function AdminPage() {
 
   const fetchSubmissions = async () => {
     setLoading(true)
-    let query = supabase
-      .from('submissions')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (filter === 'pending') query = query.eq('approved', false)
-    if (filter === 'approved') query = query.eq('approved', true)
-
-    const { data, error } = await query
-    if (!error) setSubmissions(data || [])
+    try {
+      const res = await fetch('/.netlify/functions/admin-submissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, filter }),
+      })
+      const data = await res.json()
+      setSubmissions(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Fetch error:', err)
+    }
     setLoading(false)
   }
 
@@ -44,7 +45,11 @@ export default function AdminPage() {
   }, [authed, filter])
 
   const approve = async (id) => {
-    await supabase.from('submissions').update({ approved: true }).eq('id', id)
+    await fetch('/.netlify/functions/admin-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'approve', id }),
+    })
     setSubmissions(prev => prev.map(s => s.id === id ? { ...s, approved: true } : s))
     if (selected?.id === id) setSelected(prev => ({ ...prev, approved: true }))
     if (filter === 'pending') setSubmissions(prev => prev.filter(s => s.id !== id))
@@ -52,16 +57,18 @@ export default function AdminPage() {
 
   const reject = async (id) => {
     if (!confirm('Delete this submission permanently?')) return
-    await supabase.from('submissions').delete().eq('id', id)
+    await fetch('/.netlify/functions/admin-action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
+    })
     setSubmissions(prev => prev.filter(s => s.id !== id))
     if (selected?.id === id) setSelected(null)
   }
 
   const getPhotoUrl = (path) => {
-    const { data } = supabase.storage.from('memories-photos').getPublicUrl(path)
-    return data.publicUrl
+    return `${SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}`
   }
-
   const forKidsLabel = (v) => ({ yes: 'For the girls', both: 'Everyone', no: 'Adults only' }[v] || v)
   const forKidsBadgeClass = (v) => ({ yes: 'badge-green', both: 'badge-tan', no: 'badge-red' }[v] || '')
 
