@@ -278,9 +278,8 @@ function App() {
           <label className="field-label">Who is this memory for?</label>
           <div className="radio-group">
             {[
-              { value: 'yes', label: 'Her daughters (age-appropriate)', desc: 'Shown to the girls when they\'re ready' },
-              { value: 'both', label: 'Everyone', desc: 'Visible to family and friends' },
-              { value: 'no', label: 'Adults only', desc: 'Not shown to the girls — for the fuller picture' },
+              { value: 'yes', label: 'For Maya and Sadie', desc: 'A memory especially meant for her daughters' },
+              { value: 'both', label: 'Everyone', desc: 'Visible to all family and friends' },
             ].map(opt => (
               <label key={opt.value} className={`radio-card ${form.forKids === opt.value ? 'selected' : ''}`}>
                 <input

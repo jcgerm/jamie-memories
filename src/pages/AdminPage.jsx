@@ -112,8 +112,8 @@ export default function AdminPage() {
   const getPhotoUrl = (path) =>
     `${SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}`
 
-  const forKidsLabel = (v) => ({ yes: 'For the girls', both: 'Everyone', no: 'Adults only' }[v] || v)
-  const forKidsBadgeClass = (v) => ({ yes: 'badge-green', both: 'badge-tan', no: 'badge-red' }[v] || '')
+  const forKidsLabel = (v) => ({ yes: 'For Maya and Sadie', both: 'Everyone', no: 'Adults only' }[v] || v)
+  const forKidsBadgeClass = (v) => ({ yes: 'badge-green', both: 'badge-tan', no: 'badge-red' }[v] || 'badge-tan')
 
   if (!authed) {
     return (
