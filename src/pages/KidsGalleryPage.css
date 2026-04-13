@@ -1,0 +1,51 @@
+.kids-page {
+  background: #faf7f2;
+}
+
+.kids-hero {
+  text-align: center;
+  padding: 4rem 1.5rem 2.5rem;
+  border-bottom: 1px solid rgba(139,106,74,0.15);
+  margin-bottom: 2rem;
+}
+
+.kids-hero-ornament {
+  color: #b5705a;
+  font-size: 1rem;
+  letter-spacing: 0.5rem;
+  margin-bottom: 1.25rem;
+  opacity: 0.5;
+}
+
+.kids-hero-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  font-style: italic;
+  font-weight: 400;
+  color: #3d2b1f;
+  margin-bottom: 1rem;
+  line-height: 1.15;
+}
+
+.kids-hero-sub {
+  font-family: 'Jost', sans-serif;
+  font-size: 1.05rem;
+  color: #9a8578;
+  max-width: 440px;
+  margin: 0 auto 0.75rem;
+  line-height: 1.85;
+  font-weight: 300;
+}
+
+.kids-avatar {
+  background: rgba(181, 112, 90, 0.12);
+  color: #b5705a;
+}
+
+.kids-footer-note {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.95rem;
+  color: #8b6a4a;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
