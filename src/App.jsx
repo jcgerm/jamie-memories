@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
+import * as tus from 'tus-js-client'
 import './App.css'
 
 const MAX_PHOTO_MB = 20
@@ -91,8 +92,6 @@ function App() {
     const { uploadURL, uid } = await res.json()
 
     setProgressLabel(`Uploading video: ${file.name}…`)
-    // Upload via tus for resumable large file support
-    const { default: tus } = await import('tus-js-client')
     await new Promise((resolve, reject) => {
       const upload = new tus.Upload(file, {
         uploadUrl: uploadURL,
