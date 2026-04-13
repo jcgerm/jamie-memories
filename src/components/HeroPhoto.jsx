@@ -5,7 +5,7 @@ export default function HeroPhoto() {
   const [photoUrl, setPhotoUrl] = useState(null)
 
   useEffect(() => {
-    fetch('/api/site-settings')
+    fetch('/.netlify/functions/site-settings')
       .then(r => r.json())
       .then(data => { if (data.url) setPhotoUrl(data.url) })
       .catch(() => {})
