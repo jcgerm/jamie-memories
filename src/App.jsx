@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
-import * as tus from 'tus-js-client'
 import './App.css'
 
 const MAX_PHOTO_MB = 20
@@ -92,18 +91,14 @@ function App() {
     const { uploadURL, uid } = await res.json()
 
     setProgressLabel(`Uploading video: ${file.name}…`)
-    await new Promise((resolve, reject) => {
-      const upload = new tus.Upload(file, {
-        uploadUrl: uploadURL,
-        retryDelays: [0, 3000, 5000, 10000],
-        metadata: { filename: file.name, filetype: file.type },
-        removeFingerprintOnSuccess: true,
-        storeFingerprintForResuming: false,
-        onError: reject,
-        onSuccess: resolve,
-      })
-      upload.start()
+    const uploadRes = await fetch(uploadURL, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
     })
+    if (!uploadRes.ok) {
+      throw new Error(`Video upload failed (status: ${uploadRes.status})`)
+    }
     return uid
   }
 
