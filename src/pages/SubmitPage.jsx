@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import * as tus from 'tus-js-client'
-import './App.css'
+import './SubmitPage.css'
 
 const MAX_PHOTO_MB = 20
 const MAX_PHOTO_BYTES = MAX_PHOTO_MB * 1024 * 1024
@@ -28,7 +28,7 @@ function App() {
     'What made Jamie special to you?',
     'What is something that you both shared?',
     'What is something that Jamie taught you?',
-    'What was something that made you both laugh?',
+    'What is something that makes you both laugh?',
     'What is something that will always remind you of Jamie?',
   ]
 
