@@ -21,6 +21,17 @@ function App() {
     videoLink: '',
   })
 
+  const [selectedPrompt, setSelectedPrompt] = useState(null)
+
+  const PROMPTS = [
+    'How did you meet Jamie / what is your earliest memory of her?',
+    'What made Jamie special to you?',
+    'What is something that you both shared?',
+    'What is something that Jamie taught you?',
+    'What was something that made you both laugh?',
+    'What is something that will always remind you of Jamie?',
+  ]
+
   const [photos, setPhotos] = useState([]) // { file, preview }[]
   const [videos, setVideos] = useState([]) // { file, name }[]
 
@@ -139,6 +150,7 @@ function App() {
           memory: form.memory.trim(),
           forKids: form.forKids,
           videoLink: form.videoLink.trim(),
+          prompt: selectedPrompt || null,
         }),
       })
       if (!subRes.ok) {
@@ -184,7 +196,7 @@ function App() {
   }
 
   if (step === 'uploading') return <UploadingScreen progress={progress} label={progressLabel} />
-  if (step === 'success') return <SuccessScreen onAnother={() => { setStep('form'); setForm({ submitterName: '', relationship: '', memory: '', forKids: 'both', videoLink: '' }); setPhotos([]); setVideos([]) }} />
+  if (step === 'success') return <SuccessScreen onAnother={() => { setStep('form'); setForm({ submitterName: '', relationship: '', memory: '', forKids: 'both', videoLink: '' }); setPhotos([]); setVideos([]); setSelectedPrompt(null) }} />
   if (step === 'error') return <ErrorScreen message={errorMsg} onBack={() => setStep('form')} />
 
   return (
@@ -231,16 +243,35 @@ function App() {
 
         <section className="form-section">
           <label className="field-label">Your memory <span className="required">*</span></label>
+          <p className="prompts-intro">Need a starting point? Choose a prompt:</p>
+          <div className="prompts-list">
+            {PROMPTS.map(p => (
+              <button
+                key={p}
+                type="button"
+                className={`prompt-pill ${selectedPrompt === p ? 'active' : ''}`}
+                onClick={() => setSelectedPrompt(prev => prev === p ? null : p)}
+              >
+                <span className="prompt-arrow">→</span>
+                <span className="prompt-text">{p}</span>
+              </button>
+            ))}
+          </div>
+          {selectedPrompt && (
+            <div className="prompt-active-banner">
+              {selectedPrompt}
+            </div>
+          )}
           <textarea
-            className="field-textarea"
+            className={`field-textarea ${selectedPrompt ? 'has-prompt' : ''}`}
             name="memory"
             value={form.memory}
             onChange={handleChange}
-            placeholder="Tell a story, describe who she was, share something funny or beautiful or ordinary. There's no wrong answer."
+            placeholder="Write as much or as little as you'd like. There's no wrong answer."
             rows={7}
             required
           />
-          <p className="field-hint">Write as much or as little as you'd like. Her daughters will read this someday.</p>
+          <p className="field-hint">Her daughters will read this someday.</p>
         </section>
 
         <section className="form-section">

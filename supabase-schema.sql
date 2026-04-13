@@ -11,6 +11,7 @@ create table submissions (
   video_link text,
   photo_paths text[] default '{}',
   video_uids text[] default '{}',
+  prompt text,
   approved boolean not null default false
 );
 

@@ -427,3 +427,14 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+
+.detail-prompt {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid var(--border);
+}
+
