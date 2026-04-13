@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
     const ok = await db.storage.upload('memories-photos', path, buffer, contentType)
     if (!ok) throw new Error('Upload failed')
 
-    const url = `${context.env.SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}`
+    const url = `${context.env.SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}?t=${Date.now()}`
 
     // Upsert the setting using ON CONFLICT
     await fetch(`${context.env.SUPABASE_URL}/rest/v1/site_settings`, {

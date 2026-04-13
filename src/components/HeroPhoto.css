@@ -1,13 +1,15 @@
 .hero-photo-wrap {
   display: flex;
   justify-content: center;
-  padding: 2rem 1.5rem 0;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem 0 1rem;
   animation: fadeIn 0.8s ease both;
 }
 
 .hero-photo-frame {
-  width: 140px;
-  height: 140px;
+  width: 200px;
+  height: 200px;
   border-radius: 50%;
   overflow: hidden;
   border: 3px solid var(--parchment, #f0e8d8);
@@ -20,4 +22,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+@media (max-width: 480px) {
+  .hero-photo-frame {
+    width: 160px;
+    height: 160px;
+  }
 }
