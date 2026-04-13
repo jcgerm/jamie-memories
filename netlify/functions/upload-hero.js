@@ -14,7 +14,7 @@ exports.handler = async (event) => {
     await supabase.storage.from('memories-photos').remove([path])
     const { error } = await supabase.storage.from('memories-photos').upload(path, buffer, { contentType, upsert: true })
     if (error) throw error
-    const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}`
+    const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}?t=${Date.now()}`
     await supabase.from('site_settings').upsert({ key: 'hero_photo', value: url })
     return { statusCode: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) }
   } catch (err) {

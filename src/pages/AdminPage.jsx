@@ -96,7 +96,7 @@ export default function AdminPage() {
         body: JSON.stringify({ password: ADMIN_PASSWORD, base64, contentType: file.type }),
       })
       const data = await resp.json()
-      if (data.url) setHeroUrl(data.url)
+      if (data.url) setHeroUrl(data.url + '?t=' + Date.now())
     } catch (err) {
       alert('Upload failed: ' + err.message)
     }
