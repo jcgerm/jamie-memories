@@ -7,3 +7,12 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions."upload-video"]
+  timeout = 300
+
+[functions."tus-proxy"]
+  timeout = 300

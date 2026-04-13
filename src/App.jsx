@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
+import * as tus from 'tus-js-client'
 import './App.css'
 
 const MAX_PHOTO_MB = 20
@@ -84,22 +85,36 @@ function App() {
   }
 
   const uploadVideo = async (file) => {
-    // Get a direct upload URL from our Netlify function
-    setProgressLabel('Getting video upload URL…')
-    const res = await fetch('/.netlify/functions/get-stream-upload-url', { method: 'POST' })
-    if (!res.ok) throw new Error('Could not get video upload URL')
-    const { uploadURL, uid } = await res.json()
+    setProgressLabel(`Uploading video: ${file.name}… (this may take a while)`)
 
-    setProgressLabel(`Uploading video: ${file.name}…`)
-    const uploadRes = await fetch(uploadURL, {
-      method: 'PUT',
-      headers: { 'Content-Type': file.type },
-      body: file,
+    return new Promise((resolve, reject) => {
+      let streamUid = null
+
+      const upload = new tus.Upload(file, {
+        endpoint: '/.netlify/functions/tus-proxy',
+        chunkSize: 5 * 1024 * 1024, // 5MB chunks — safe for Netlify
+        retryDelays: [0, 3000, 5000],
+        metadata: {
+          filename: file.name,
+          filetype: file.type,
+          maxDurationSeconds: '3600',
+        },
+        onAfterResponse: (req, res) => {
+          // Capture the stream UID from our proxy's response header
+          const uid = res.getHeader('x-stream-uid')
+          if (uid) streamUid = uid
+        },
+        onError: reject,
+        onSuccess: () => {
+          if (streamUid) {
+            resolve(streamUid)
+          } else {
+            reject(new Error('Upload succeeded but no video ID was returned'))
+          }
+        },
+      })
+      upload.start()
     })
-    if (!uploadRes.ok) {
-      throw new Error(`Video upload failed (status: ${uploadRes.status})`)
-    }
-    return uid
   }
 
   const handleSubmit = async (e) => {

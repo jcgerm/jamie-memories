@@ -1,6 +1,5 @@
-// netlify/functions/get-stream-upload-url.js
-// Returns a one-time upload token for Cloudflare Stream tus uploads from the browser.
-// The token is scoped to a single upload and expires in 1 hour — safe to expose client-side.
+// netlify/functions/upload-video.js
+// Proxies the video file to Cloudflare Stream server-side, avoiding CORS.
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -11,8 +10,8 @@ exports.handler = async (event) => {
   const CF_STREAM_TOKEN = process.env.CF_STREAM_TOKEN
 
   try {
-    // Create a one-time upload token scoped to a single video
-    const response = await fetch(
+    // First get a direct upload URL from Cloudflare
+    const initRes = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream/direct_upload`,
       {
         method: 'POST',
@@ -23,27 +22,37 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           maxDurationSeconds: 3600,
           expiry: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-          tusResumable: '1.0.0',
         }),
       }
     )
 
-    const data = await response.json()
+    const initData = await initRes.json()
+    if (!initData.success) {
+      throw new Error(initData.errors?.[0]?.message || 'Failed to get upload URL')
+    }
 
-    if (!data.success) {
-      throw new Error(data.errors?.[0]?.message || 'Stream API error')
+    const { uploadURL, uid } = initData.result
+
+    // Decode the base64 video body and upload it to Cloudflare
+    const videoBuffer = Buffer.from(event.body, 'base64')
+
+    const uploadRes = await fetch(uploadURL, {
+      method: 'PUT',
+      headers: { 'Content-Type': event.headers['x-content-type'] || 'video/mp4' },
+      body: videoBuffer,
+    })
+
+    if (!uploadRes.ok) {
+      throw new Error(`Cloudflare upload failed: ${uploadRes.status}`)
     }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        uploadURL: data.result.uploadURL,
-        uid: data.result.uid,
-      }),
+      body: JSON.stringify({ uid }),
     }
   } catch (err) {
-    console.error('Stream upload URL error:', err)
+    console.error('Video upload error:', err)
     return {
       statusCode: 500,
       body: JSON.stringify({ error: err.message }),
