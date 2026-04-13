@@ -118,7 +118,7 @@ export default function AdminPage() {
   if (!authed) {
     return (
       <div className="admin-login">
-        <h1>Jamie Memories</h1>
+        <h1>Remembering Jamie</h1>
         <p className="admin-login-sub">Admin access</p>
         <form onSubmit={login} className="login-form">
           <input
@@ -140,7 +140,7 @@ export default function AdminPage() {
     <div className="admin-page">
       <div className="admin-sidebar">
         <div className="admin-brand">
-          <h2>Jamie Memories</h2>
+          <h2>Remembering Jamie</h2>
           <p>Admin</p>
         </div>
 

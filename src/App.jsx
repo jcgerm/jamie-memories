@@ -191,7 +191,7 @@ function App() {
     <div className="page">
       <nav className="submit-nav">
         <div className="submit-nav-inner">
-          <Link to="/memories" className="nav-logo">Jamie Memories</Link>
+          <Link to="/memories" className="nav-logo">Remembering Jamie</Link>
           <Link to="/memories" className="nav-gallery-btn">View memories</Link>
         </div>
       </nav>
@@ -333,7 +333,7 @@ function App() {
       </form>
 
       <footer className="page-footer">
-        <p>Jamie Memories · Made with love</p>
+        <p>Remembering Jamie · Made with love</p>
       </footer>
     </div>
   )
