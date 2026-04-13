@@ -97,6 +97,8 @@ function App() {
         uploadUrl: uploadURL,
         retryDelays: [0, 3000, 5000, 10000],
         metadata: { filename: file.name, filetype: file.type },
+        removeFingerprintOnSuccess: true,
+        storeFingerprintForResuming: false,
         onError: reject,
         onSuccess: resolve,
       })
