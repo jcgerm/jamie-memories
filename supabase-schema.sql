@@ -15,7 +15,19 @@ create table submissions (
   approved boolean not null default false
 );
 
--- Enable Row Level Security
+-- Site settings (hero photo, etc.)
+create table site_settings (
+  key text primary key,
+  value text
+);
+
+-- Allow public read of settings
+alter table site_settings enable row level security;
+create policy "Public can read settings"
+  on site_settings for select
+  using (true);
+
+
 alter table submissions enable row level security;
 
 -- Allow anyone to INSERT (submit a memory)
@@ -42,3 +54,8 @@ create policy "Anyone can upload photos"
 create policy "Anyone can view photos"
   on storage.objects for select
   using (bucket_id = 'memories-photos');
+
+-- If upgrading an existing install, run this to add site_settings:
+-- create table if not exists site_settings (key text primary key, value text);
+-- alter table site_settings enable row level security;
+-- create policy "Public can read settings" on site_settings for select using (true);

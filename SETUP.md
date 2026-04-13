@@ -1,180 +1,157 @@
-# Jamie Memories — Setup Guide
+# Remembering Jamie — Setup Guide
 
-A memorial submission and archive app. Contributors submit photos, videos, and written memories.
-Your cousin reviews and approves each one before it's saved. Built with React, Supabase, Cloudflare Stream, and Netlify.
+Built with React, Supabase, Cloudflare Stream, and Cloudflare Pages.
 
 ---
 
-## Overview of the stack
+## Stack
 
-| Service | What it does | Cost |
+| Service | Purpose | Cost |
 |---|---|---|
-| **Netlify** | Hosts the website + serverless function | Free |
-| **Supabase** | Database (submissions) + Photo storage | Free tier |
-| **Cloudflare Stream** | Video upload + playback | $5/month |
+| Cloudflare Pages | Hosting + serverless functions | Free |
+| Supabase | Database + photo storage | Free tier |
+| Cloudflare Stream | Video upload + playback | $5/month |
+| Cloudflare Registrar | Domain | ~$10/year |
 
-Total cost: ~$5/month, or free if you skip direct video upload and use link-only.
+Total: ~$5/month ($60/year) plus domain.
 
 ---
 
 ## Step 1 — Supabase (database + photo storage)
 
-1. Go to [supabase.com](https://supabase.com) and create a free account.
-2. Click **New project**. Name it `jamie-memories`. Choose a region close to you (US East is fine). Set a database password and save it somewhere.
+1. Go to supabase.com and create a free account.
+2. Click New project. Name it remembering-jamie. Choose US East region. Set a database password and save it.
 3. Wait ~2 minutes for the project to spin up.
 
 ### Create the database table
 
-4. In the left sidebar, go to **Database > SQL Editor > New Query**.
-5. Paste the entire contents of `supabase-schema.sql` and click **Run**.
+4. Go to Database > SQL Editor > New Query.
+5. Paste the entire contents of supabase-schema.sql and click Run.
+
+### Add the prompt column (if upgrading from a previous version)
+
+If you already have a submissions table, run this separately:
+
+  alter table submissions add column if not exists prompt text;
 
 ### Create the photo storage bucket
 
-6. In the left sidebar, go to **Storage**.
-7. Click **New bucket**.
-8. Name it exactly: `memories-photos`
-9. Toggle **Public bucket** to ON.
-10. Click **Save**.
+6. Go to Storage > New bucket.
+7. Name it exactly: memories-photos
+8. Toggle Public bucket to ON.
+9. Click Save.
 
 ### Get your API keys
 
-11. Go to **Project Settings > API** (gear icon in sidebar).
-12. Copy:
-    - **Project URL** → this is your `VITE_SUPABASE_URL`
-    - **anon public** key → this is your `VITE_SUPABASE_ANON_KEY`
+10. Go to Project Settings > API.
+11. Copy:
+    - Project URL — used for both VITE_SUPABASE_URL and SUPABASE_URL
+    - service_role secret — used for SUPABASE_SERVICE_ROLE_KEY
 
 ---
 
 ## Step 2 — Cloudflare Stream (video)
 
-*Skip this step if you want link-only video (no direct upload). The app works without it.*
+Skip if you only want link-based video. The app still works without it.
 
-1. Go to [cloudflare.com](https://cloudflare.com) and create a free account (the base account is free; Stream is $5/month and billed only when you enable it).
-2. In the dashboard, go to **Stream** in the left sidebar. You may need to enable it and add a payment method.
-3. Note your **Account ID** — it's in the right sidebar on any Cloudflare dashboard page. This is your `VITE_CF_ACCOUNT_ID`.
+1. In your Cloudflare dashboard, click Stream in the left sidebar. Enable it and add a payment method ($5/month, only billed if you use it).
+2. Your Account ID is in the right sidebar of any Cloudflare dashboard page.
 
-### Create an API token for Stream
+### Create a Stream API token
 
-4. Click your profile icon (top right) > **My Profile > API Tokens > Create Token**.
-5. Click **Get Started** next to "Create Custom Token".
-6. Name it `jamie-memories-stream`.
-7. Under Permissions: `Account > Cloudflare Stream > Edit`.
-8. Click **Continue to Summary > Create Token**.
-9. Copy the token — this is your `CF_STREAM_TOKEN` (goes in Netlify, NOT the `.env` file).
+3. Click your profile icon > My Profile > API Tokens > Create Token.
+4. Click Get started next to Create Custom Token.
+5. Name it remembering-jamie-stream.
+6. Permissions: Account > Cloudflare Stream > Edit.
+7. Account Resources: Include > your account.
+8. Click Continue to Summary > Create Token.
+9. Copy the token immediately — Cloudflare only shows it once.
 
 ---
 
-## Step 3 — Netlify (hosting)
+## Step 3 — Cloudflare Pages (hosting)
 
-1. Go to [netlify.com](https://netlify.com) and create a free account.
-2. Click **Add new site > Import an existing project**.
+### Push to GitHub
 
-### Deploy from GitHub (recommended)
+1. Create a new GitHub repository (can be private).
+2. In your project folder run:
 
-3. Push this project folder to a GitHub repo (any name, can be private).
-4. In Netlify, connect your GitHub account and select the repo.
-5. Build settings should auto-detect:
-   - **Build command:** `npm run build`
-   - **Publish directory:** `dist`
-6. Click **Deploy site**.
+  git init
+  git add .
+  git commit -m "Initial commit"
+  git remote add origin https://github.com/yourusername/remembering-jamie.git
+  git push -u origin main
 
-### Or deploy by drag-and-drop
+### Connect to Cloudflare Pages
 
-3. In your terminal, run: `npm install && npm run build`
-4. Drag the `dist` folder onto the Netlify deploy area.
-   - Note: Drag-and-drop doesn't support serverless functions, so video upload won't work this way. Use GitHub instead.
+3. In Cloudflare dashboard > Workers & Pages > Create > Pages > Connect to Git.
+4. Select your GitHub repo.
+5. Build settings:
+   - Framework preset: None
+   - Build command: npm run build
+   - Build output directory: dist
+6. Click Save and Deploy.
 
-### Set environment variables in Netlify
+### Set environment variables
 
-7. In your Netlify site dashboard, go to **Site Configuration > Environment Variables**.
-8. Add these variables:
+7. Go to your Pages project > Settings > Environment Variables.
+8. Add these under Production:
 
-| Key | Value |
-|---|---|
-| `VITE_SUPABASE_URL` | Your Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Your Supabase anon key |
-| `VITE_CF_ACCOUNT_ID` | Your Cloudflare account ID |
-| `VITE_ADMIN_PASSWORD` | A strong password you choose (e.g. `jamie2024memories!`) |
-| `CF_STREAM_TOKEN` | Your Cloudflare Stream API token (no VITE_ prefix — stays server-side) |
+  VITE_SUPABASE_URL        — Your Supabase project URL
+  VITE_ADMIN_PASSWORD      — A strong password for admin access
+  SUPABASE_URL             — Same as VITE_SUPABASE_URL
+  SUPABASE_SERVICE_ROLE_KEY — Your Supabase service_role key
+  CF_ACCOUNT_ID            — Your Cloudflare account ID
+  CF_STREAM_TOKEN          — Your Cloudflare Stream API token
+  ADMIN_PASSWORD           — Same as VITE_ADMIN_PASSWORD
 
-9. After adding variables, go to **Deploys > Trigger deploy > Deploy site**.
+9. After adding variables, go to Deployments > Retry deployment.
+
+### Connect your domain
+
+10. Go to Pages project > Custom domains > Set up a custom domain.
+11. Enter rememberingjamie.com and follow the prompts.
+12. Since your domain is also on Cloudflare, DNS configures automatically.
+13. SSL is automatic.
 
 ---
 
 ## Step 4 — Local development (optional)
 
-If you want to run it locally first:
+  npm install
+  cp .env.example .env.local
+  # fill in .env.local with your values
+  npm run dev
 
-```bash
-# Install dependencies
-npm install
-
-# Copy env file and fill in your values
-cp .env.example .env.local
-
-# Start dev server
-npm run dev
-```
-
-The app will be at http://localhost:5173
-The admin page will be at http://localhost:5173/admin
-
-Note: The video upload serverless function won't work locally without the Netlify CLI.
-To test video upload locally: `npm install -g netlify-cli && netlify dev`
+App: http://localhost:5173
+Admin: http://localhost:5173/admin
 
 ---
 
-## Step 5 — Share the link
+## Pages
 
-Once deployed, Netlify gives you a URL like `https://whimsical-fox-abc123.netlify.app`.
-
-You can customize this:
-- In Netlify: **Site Configuration > General > Site details > Change site name** → e.g. `jamie-memories.netlify.app`
-- Or add a custom domain if you have one: **Domain management > Add domain**.
-
-Share the main URL with family and friends.
-The admin page is at `/admin` — only you and your cousin need this.
+  /memories   Public gallery — all approved submissions
+  /submit     Submission form
+  /kids       Unlisted — for Maya and Sadie when they are ready
+  /admin      Admin review — your cousin only
 
 ---
 
-## Using the admin page
+## Admin usage
 
-Go to `your-site-url.netlify.app/admin`.
+Go to rememberingjamie.com/admin and log in with your VITE_ADMIN_PASSWORD.
 
-- Log in with the `VITE_ADMIN_PASSWORD` you set.
-- **Pending** tab: new submissions waiting for review.
-- Click any submission to see the full memory, photos, and videos.
-- **Approve** saves it to the archive. **Delete** removes it permanently.
-- Approved submissions can be viewed/filtered in the **Approved** tab.
-
----
-
-## Notes on the "for kids" flag
-
-Each submission is tagged:
-- **For the girls** — age-appropriate, intended for the daughters
-- **Everyone** — family and friends
-- **Adults only** — not intended for the girls
-
-This is metadata — it doesn't automatically hide or show anything right now.
-As the girls grow up, your cousin can filter the approved submissions by this flag
-to curate what they share with them at different ages.
-
-A future "gallery" view could be added that filters by this flag automatically.
-Ask if you'd like that added.
+- Pending tab — new submissions to review
+- Click any submission to read the memory, view photos and videos
+- Approve publishes it to the gallery
+- Delete removes it permanently
+- Check multiple submissions and use Delete N to bulk delete
 
 ---
 
-## Rough capacity on free tiers
+## Capacity
 
-| | Free limit | Realistic capacity |
-|---|---|---|
-| Photos | 1GB (Supabase) | ~2,000 compressed photos |
-| Videos | 1,000 min (Cloudflare Stream $5/mo) | ~500 avg 2-min clips |
-| Text memories | 500MB database | Effectively unlimited |
-
----
-
-## Questions?
-
-The code is in `src/`. The main submission form is `src/App.jsx`. The admin interface is `src/pages/AdminPage.jsx`. Both are straightforward React — easy to modify if you want to change wording, colors, or add fields.
+  Photos    1GB Supabase free       ~2,000 compressed photos
+  Videos    1,000 min Stream        ~500 avg 2-min clips ($5/mo)
+  Text      500MB database          Effectively unlimited
+  Hosting   Cloudflare Pages free   No limits
