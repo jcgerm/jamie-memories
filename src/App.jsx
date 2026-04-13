@@ -65,14 +65,21 @@ function App() {
   }
 
   const uploadPhoto = async (file, submissionId, index) => {
-    // Compress/resize before upload
     const compressed = await compressImage(file, 1920)
     const ext = file.name.split('.').pop()
     const path = `${submissionId}/photo_${index}.${ext}`
-    const { error } = await supabase.storage
-      .from('memories-photos')
-      .upload(path, compressed, { contentType: file.type })
-    if (error) throw error
+
+    // Convert to base64 and send through serverless function
+    const base64 = await blobToBase64(compressed)
+    const res = await fetch('/.netlify/functions/upload-photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64, contentType: file.type, path }),
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.error || 'Photo upload failed')
+    }
     return path
   }
 
@@ -110,26 +117,27 @@ function App() {
     setProgress(0)
 
     try {
-      // 1. Insert submission record (pending approval)
+      // 1. Insert submission record via serverless function (uses service role key)
       setProgressLabel('Saving your memory…')
-      const { data: submission, error: insertError } = await supabase
-        .from('submissions')
-        .insert({
-          submitter_name: form.submitterName.trim(),
+      const subRes = await fetch('/.netlify/functions/create-submission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submitterName: form.submitterName.trim(),
           relationship: form.relationship.trim(),
           memory: form.memory.trim(),
-          for_kids: form.forKids,
-          video_link: form.videoLink.trim() || null,
-          approved: false,
-        })
-        .select()
-        .single()
-
-      if (insertError) throw insertError
-      const submissionId = submission.id
+          forKids: form.forKids,
+          videoLink: form.videoLink.trim(),
+        }),
+      })
+      if (!subRes.ok) {
+        const err = await subRes.json()
+        throw new Error(err.error || 'Failed to save submission')
+      }
+      const { id: submissionId } = await subRes.json()
       setProgress(10)
 
-      // 2. Upload photos
+      // 2. Upload photos via serverless function
       const photoPaths = []
       for (let i = 0; i < photos.length; i++) {
         setProgressLabel(`Uploading photo ${i + 1} of ${photos.length}…`)
@@ -138,7 +146,7 @@ function App() {
         setProgress(10 + Math.round(((i + 1) / Math.max(photos.length, 1)) * 60))
       }
 
-      // 3. Upload videos
+      // 3. Upload videos via Cloudflare Stream
       const videoUids = []
       for (let i = 0; i < videos.length; i++) {
         setProgressLabel(`Uploading video ${i + 1} of ${videos.length}… (this may take a while)`)
@@ -147,12 +155,13 @@ function App() {
         setProgress(70 + Math.round(((i + 1) / Math.max(videos.length, 1)) * 25))
       }
 
-      // 4. Update submission with media paths
+      // 4. Update submission with media paths via serverless function
       setProgressLabel('Finishing up…')
-      await supabase
-        .from('submissions')
-        .update({ photo_paths: photoPaths, video_uids: videoUids })
-        .eq('id', submissionId)
+      await fetch('/.netlify/functions/update-submission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: submissionId, photoPaths, videoUids }),
+      })
 
       setProgress(100)
       setStep('success')
@@ -350,6 +359,16 @@ function ErrorScreen({ message, onBack }) {
       <button className="submit-btn" onClick={onBack}>Go back and try again</button>
     </div>
   )
+}
+
+// Convert blob to base64 string for serverless function transport
+async function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.split(',')[1])
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 
 // Compress image client-side before upload
