@@ -300,7 +300,7 @@ export default function AdminPage() {
           {!loading && submissions.length === 0 && (
             <p className="admin-empty">No {filter} submissions.</p>
           )}
-          {submissions.map(s => (
+          {!loading && submissions.map(s => (
             <div
               key={s.id}
               className={`submission-card ${selected?.id === s.id ? 'active' : ''}`}
