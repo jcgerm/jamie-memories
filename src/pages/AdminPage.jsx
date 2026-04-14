@@ -14,10 +14,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState(null)
 
-  // Multi-select state
-  const [checked, setChecked] = useState(new Set())
-  const [bulkDeleting, setBulkDeleting] = useState(false)
-
   // Hero photo state
   const [heroUrl, setHeroUrl] = useState(null)
   const [heroUploading, setHeroUploading] = useState(false)
@@ -136,7 +132,6 @@ export default function AdminPage() {
 
   const fetchSubmissions = async () => {
     setLoading(true)
-    setChecked(new Set())
     try {
       const res = await fetch('/api/admin-submissions', {
         method: 'POST',
@@ -176,45 +171,7 @@ export default function AdminPage() {
     })
     setSubmissions(prev => prev.filter(s => s.id !== id))
     if (selected?.id === id) setSelected(null)
-    setChecked(prev => { const n = new Set(prev); n.delete(id); return n })
   }
-
-  const bulkDelete = async () => {
-    if (checked.size === 0) return
-    if (!confirm(`Permanently delete ${checked.size} submission${checked.size > 1 ? 's' : ''}?`)) return
-    setBulkDeleting(true)
-    await Promise.all([...checked].map(id =>
-      fetch('/api/admin-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
-      })
-    ))
-    setSubmissions(prev => prev.filter(s => !checked.has(s.id)))
-    if (checked.has(selected?.id)) setSelected(null)
-    setChecked(new Set())
-    setBulkDeleting(false)
-  }
-
-  const toggleCheck = (e, id) => {
-    e.stopPropagation()
-    setChecked(prev => {
-      const n = new Set(prev)
-      n.has(id) ? n.delete(id) : n.add(id)
-      return n
-    })
-  }
-
-  const toggleAll = () => {
-    if (checked.size === submissions.length) {
-      setChecked(new Set())
-    } else {
-      setChecked(new Set(submissions.map(s => s.id)))
-    }
-  }
-
-  const allChecked = submissions.length > 0 && checked.size === submissions.length
-  const someChecked = checked.size > 0 && checked.size < submissions.length
 
   const getPhotoUrl = (path) =>
     `${SUPABASE_URL}/storage/v1/object/public/memories-photos/${path}`
@@ -312,7 +269,7 @@ export default function AdminPage() {
             <button
               key={f}
               className={`filter-tab ${filter === f ? 'active' : ''}`}
-              onClick={() => { setFilter(f); setChecked(new Set()) }}
+              onClick={() => setFilter(f)}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
@@ -338,33 +295,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Bulk action toolbar */}
-        {submissions.length > 0 && (
-          <div className="bulk-toolbar">
-            <label className="select-all-label">
-              <input
-                type="checkbox"
-                checked={allChecked}
-                ref={el => { if (el) el.indeterminate = someChecked }}
-                onChange={toggleAll}
-                className="bulk-checkbox"
-              />
-              <span className="select-all-text">
-                {checked.size > 0 ? `${checked.size} selected` : 'Select all'}
-              </span>
-            </label>
-            {checked.size > 0 && (
-              <button
-                className="bulk-delete-btn"
-                onClick={bulkDelete}
-                disabled={bulkDeleting}
-              >
-                {bulkDeleting ? 'Deleting…' : `Delete ${checked.size}`}
-              </button>
-            )}
-          </div>
-        )}
-
         <div className="submission-list">
           {loading && <p className="admin-loading">Loading…</p>}
           {!loading && submissions.length === 0 && (
@@ -373,21 +303,12 @@ export default function AdminPage() {
           {submissions.map(s => (
             <div
               key={s.id}
-              className={`submission-card ${selected?.id === s.id ? 'active' : ''} ${checked.has(s.id) ? 'checked' : ''}`}
+              className={`submission-card ${selected?.id === s.id ? 'active' : ''}`}
               onClick={() => setSelected(s)}
             >
-              <div className="sc-check-row">
-                <input
-                  type="checkbox"
-                  className="bulk-checkbox"
-                  checked={checked.has(s.id)}
-                  onChange={e => toggleCheck(e, s.id)}
-                  onClick={e => e.stopPropagation()}
-                />
-                <div className="sc-header">
-                  <span className="sc-name">{s.submitter_name}</span>
-                  <span className={`badge ${forKidsBadgeClass(s.for_kids)}`}>{forKidsLabel(s.for_kids)}</span>
-                </div>
+              <div className="sc-header">
+                <span className="sc-name">{s.submitter_name}</span>
+                <span className={`badge ${forKidsBadgeClass(s.for_kids)}`}>{forKidsLabel(s.for_kids)}</span>
               </div>
               {s.relationship && <p className="sc-rel">{s.relationship}</p>}
               <p className="sc-preview">{s.memory?.slice(0, 100)}{s.memory?.length > 100 ? '…' : ''}</p>
@@ -400,10 +321,7 @@ export default function AdminPage() {
       <div className="admin-main">
         {!selected ? (
           <div className="admin-empty-state">
-            {checked.size > 0
-              ? <p>{checked.size} submission{checked.size > 1 ? 's' : ''} selected</p>
-              : <p>Select a submission to review</p>
-            }
+            <p>Select a submission to review</p>
           </div>
         ) : (
           <div className="submission-detail fade-in">
