@@ -22,7 +22,8 @@ export function supabaseClient(env) {
           qs += `&${k}=eq.${v}`
         }
       }
-      if (!options.noOrder) qs += '&order=created_at.desc'
+      const hasCreatedAt = !['site_settings'].includes(table)
+      if (!options.noOrder && hasCreatedAt) qs += '&order=created_at.desc'
       const res = await fetch(`${url}/rest/v1/${table}?${qs}`, { headers })
       return res.json()
     },
