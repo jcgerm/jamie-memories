@@ -110,7 +110,7 @@ function App() {
 
       const upload = new tus.Upload(file, {
         endpoint: '/api/tus-proxy',
-        chunkSize: 5 * 1024 * 1024, // 5MB chunks — safe for Netlify
+        chunkSize: 5 * 1024 * 1024,
         retryDelays: [0, 3000, 5000],
         metadata: {
           filename: file.name,
