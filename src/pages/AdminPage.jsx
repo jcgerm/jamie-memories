@@ -244,7 +244,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="admin-page">
+    <div className={`admin-page${selected ? ' detail-open' : ''}`}>
       <div className="admin-sidebar">
         <div className="admin-brand">
           <h2>Remembering Jamie</h2>
@@ -407,6 +407,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <div className="submission-detail fade-in">
+            <button className="detail-back-btn" onClick={() => setSelected(null)}>← Back</button>
             <div className="detail-header">
               <div>
                 <h2 className="detail-name">{selected.submitter_name}</h2>
