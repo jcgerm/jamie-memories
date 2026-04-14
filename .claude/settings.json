@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"c:\\\\Users\\\\jfried\\\\Downloads\\\\jamie-memories\\\\jamie-memories\\\\netlify\\\\functions\" -type f -exec basename {} \\\\;)"
+    ]
+  }
+}

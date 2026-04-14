@@ -11,17 +11,25 @@ export default function KidsGalleryPage() {
   const [error, setError] = useState(null)
   const [expanded, setExpanded] = useState({})
 
-  useEffect(() => {
-    fetch('/api/gallery-kids')
+  const loadMemories = (showLoading = true) => {
+    if (showLoading) setLoading(true)
+    fetch('/api/gallery-kids', { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
         setMemories(Array.isArray(data) ? data : [])
-        setLoading(false)
+        if (showLoading) setLoading(false)
       })
       .catch(() => {
         setError('Could not load memories. Please try again.')
-        setLoading(false)
+        if (showLoading) setLoading(false)
       })
+  }
+
+  useEffect(() => {
+    loadMemories()
+    const onVisible = () => { if (document.visibilityState === 'visible') loadMemories(false) }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [])
 
   const getPhotoUrl = (path) =>
