@@ -12,7 +12,7 @@ export default function GalleryPage() {
   const [expanded, setExpanded] = useState({}) // track which long memories are expanded
 
   useEffect(() => {
-    fetch('/.netlify/functions/gallery')
+    fetch('/api/gallery')
       .then(r => r.json())
       .then(data => {
         setMemories(Array.isArray(data) ? data : [])

@@ -25,7 +25,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authed) {
-      fetch('/.netlify/functions/site-settings')
+      fetch('/api/site-settings')
         .then(r => r.json())
         .then(data => { if (data.hero_photo) setHeroUrl(data.hero_photo) })
         .catch(() => {})
@@ -40,7 +40,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (authed) {
-      fetch('/.netlify/functions/site-settings')
+      fetch('/api/site-settings')
         .then(r => r.json())
         .then(data => {
           if (data.notification_emails) {
@@ -66,7 +66,7 @@ export default function AdminPage() {
   const saveEmails = async () => {
     setNotifSaving(true)
     try {
-      await fetch('/.netlify/functions/save-notification-emails', {
+      await fetch('/api/save-notification-emails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, emails: notifEmails }),
@@ -90,7 +90,7 @@ export default function AdminPage() {
         reader.onerror = rej
         reader.readAsDataURL(file)
       })
-      const resp = await fetch('/.netlify/functions/upload-hero', {
+      const resp = await fetch('/api/upload-hero', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, base64, contentType: file.type }),
@@ -118,7 +118,7 @@ export default function AdminPage() {
 
   const fetchBackupStatus = async () => {
     try {
-      const res = await fetch('/.netlify/functions/backup-status', {
+      const res = await fetch('/api/backup-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD }),
@@ -138,7 +138,7 @@ export default function AdminPage() {
     setLoading(true)
     setChecked(new Set())
     try {
-      const res = await fetch('/.netlify/functions/admin-submissions', {
+      const res = await fetch('/api/admin-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, filter }),
@@ -156,7 +156,7 @@ export default function AdminPage() {
   }, [authed, filter])
 
   const approve = async (id) => {
-    await fetch('/.netlify/functions/admin-action', {
+    await fetch('/api/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'approve', id }),
@@ -169,7 +169,7 @@ export default function AdminPage() {
 
   const reject = async (id) => {
     if (!confirm('Delete this submission permanently?')) return
-    await fetch('/.netlify/functions/admin-action', {
+    await fetch('/api/admin-action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
@@ -184,7 +184,7 @@ export default function AdminPage() {
     if (!confirm(`Permanently delete ${checked.size} submission${checked.size > 1 ? 's' : ''}?`)) return
     setBulkDeleting(true)
     await Promise.all([...checked].map(id =>
-      fetch('/.netlify/functions/admin-action', {
+      fetch('/api/admin-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: ADMIN_PASSWORD, action: 'delete', id }),
