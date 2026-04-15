@@ -225,7 +225,7 @@
   padding: 0 1.25rem 1rem;
 }
 
-.feed-prompt {
+.feed-memory .feed-prompt {
   font-size: 0.78rem;
   color: var(--accent);
   font-family: var(--font-sans);
