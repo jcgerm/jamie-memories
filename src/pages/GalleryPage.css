@@ -225,12 +225,23 @@
   padding: 0 1.25rem 1rem;
 }
 
+.feed-prompt {
+  font-size: 0.78rem;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.5px solid var(--border);
+}
+
 .feed-memory p {
   font-size: 1rem;
   color: var(--charcoal);
   line-height: 1.8;
   font-style: italic;
   font-weight: 300;
+  white-space: pre-wrap;
 }
 
 .feed-expand {

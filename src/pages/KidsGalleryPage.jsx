@@ -108,6 +108,7 @@ export default function KidsGalleryPage() {
                   </div>
 
                   <div className="feed-memory">
+                    {m.prompt && <p className="feed-prompt">"{m.prompt}"</p>}
                     <p>"{displayText}"</p>
                     {isLong && (
                       <button className="feed-expand" onClick={() => toggleExpand(m.id)}>
