@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { flushSync } from 'react-dom'
 import { Link } from 'react-router-dom'
 import './GalleryPage.css'
@@ -135,7 +135,6 @@ export default function GalleryPage() {
         <div className="gallery-nav-inner">
           <Link to="/" className="nav-logo">Remembering Jamie</Link>
           <div className="nav-links">
-            <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-memorial-btn nav-memorial-desktop">Celebration of life</a>
             <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
             <button className={`nav-hamburger${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
               {menuOpen ? '✕' : '☰'}
@@ -144,6 +143,7 @@ export default function GalleryPage() {
         </div>
         <div className={`nav-mobile-menu${menuOpen ? ' nav-mobile-menu--open' : ''}`}>
           <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Celebration of life</a>
+          <a href="https://mcpsmd.schoolcashonline.com/Fee/Details/116448/354/False/True" target="_blank" rel="noreferrer" className="nav-mobile-link nav-mobile-link--donate" onClick={() => setMenuOpen(false)}>Donate to the Jamie Krusinski Softball Scholarship</a>
         </div>
       </nav>
 
