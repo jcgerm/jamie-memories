@@ -6,6 +6,7 @@ import HeroPhoto from '../components/HeroPhoto'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 export default function GalleryPage() {
+  const [menuOpen, setMenuOpen] = useState(false)
   const [memories, setMemories] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -85,9 +86,15 @@ export default function GalleryPage() {
         <div className="gallery-nav-inner">
           <Link to="/" className="nav-logo">Remembering Jamie</Link>
           <div className="nav-links">
-            <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-memorial-btn">Celebration of life</a>
+            <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-memorial-btn nav-memorial-desktop">Celebration of life</a>
             <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
+            <button className={`nav-hamburger${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+              {menuOpen ? '✕' : '☰'}
+            </button>
           </div>
+        </div>
+        <div className={`nav-mobile-menu${menuOpen ? ' nav-mobile-menu--open' : ''}`}>
+          <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Celebration of life</a>
         </div>
       </nav>
 
