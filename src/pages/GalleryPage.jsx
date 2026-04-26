@@ -21,6 +21,7 @@ export default function GalleryPage() {
   const [lightbox, setLightbox] = useState(null)
   const feedRef = useRef(null)
   const cardRefs = useRef({})
+  const navRef = useRef(null)
 
   const PAGE_SIZE = 10
 
@@ -93,6 +94,15 @@ export default function GalleryPage() {
   const prevPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index - 1 }))
   const nextPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index + 1 }))
 
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
+
   // Fade-in observer
   useEffect(() => {
     const feed = feedRef.current
@@ -121,7 +131,7 @@ export default function GalleryPage() {
 
   return (
     <div className="gallery-page">
-      <nav className="gallery-nav">
+      <nav className="gallery-nav" ref={navRef}>
         <div className="gallery-nav-inner">
           <Link to="/" className="nav-logo">Remembering Jamie</Link>
           <div className="nav-links">
