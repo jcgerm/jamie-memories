@@ -26,8 +26,17 @@ export function supabaseClient(env) {
       if (!options.noOrder && hasCreatedAt) qs += '&order=created_at.desc'
       if (options.limit != null) qs += `&limit=${options.limit}`
       if (options.offset != null) qs += `&offset=${options.offset}`
-      const res = await fetch(`${url}/rest/v1/${table}?${qs}`, { headers })
-      return res.json()
+      const reqHeaders = options.count
+        ? { ...headers, 'Prefer': 'count=exact' }
+        : headers
+      const res = await fetch(`${url}/rest/v1/${table}?${qs}`, { headers: reqHeaders })
+      const data = await res.json()
+      if (options.count) {
+        const range = res.headers.get('Content-Range') // e.g. "0-9/42"
+        const total = range ? parseInt(range.split('/')[1], 10) : null
+        return { data, total }
+      }
+      return data
     },
 
     async insert(table, data) {

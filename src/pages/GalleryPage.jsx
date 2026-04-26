@@ -9,7 +9,7 @@ export default function GalleryPage() {
   const [memories, setMemories] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [hasMore, setHasMore] = useState(true)
+  const [total, setTotal] = useState(null)
   const [offset, setOffset] = useState(0)
   const [error, setError] = useState(null)
   const [expanded, setExpanded] = useState({})
@@ -20,11 +20,11 @@ export default function GalleryPage() {
     if (showLoading) setLoading(true)
     fetch(`/api/gallery?limit=${PAGE_SIZE}&offset=0`, { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => {
-        const items = Array.isArray(data) ? data : []
-        setMemories(items)
-        setOffset(items.length)
-        setHasMore(items.length === PAGE_SIZE)
+      .then(({ items, total: t }) => {
+        const page = Array.isArray(items) ? items : []
+        setMemories(page)
+        setOffset(page.length)
+        setTotal(t)
         if (showLoading) setLoading(false)
       })
       .catch(() => {
@@ -37,11 +37,10 @@ export default function GalleryPage() {
     setLoadingMore(true)
     fetch(`/api/gallery?limit=${PAGE_SIZE}&offset=${offset}`, { cache: 'no-store' })
       .then(r => r.json())
-      .then(data => {
-        const items = Array.isArray(data) ? data : []
-        setMemories(prev => [...prev, ...items])
-        setOffset(prev => prev + items.length)
-        setHasMore(items.length > 0 && items.length === PAGE_SIZE)
+      .then(({ items }) => {
+        const page = Array.isArray(items) ? items : []
+        setMemories(prev => [...prev, ...page])
+        setOffset(prev => prev + page.length)
         setLoadingMore(false)
       })
       .catch(() => setLoadingMore(false))
@@ -98,7 +97,7 @@ export default function GalleryPage() {
         </p>
         {!loading && !error && (
           <p className="gallery-count">
-            {memories.length} {memories.length === 1 ? 'memory' : 'memories'} shared
+            {total} {total === 1 ? 'memory' : 'memories'} shared
           </p>
         )}
       </header>
@@ -245,7 +244,7 @@ export default function GalleryPage() {
                 </article>
               )
             })}
-            {hasMore && (
+            {total !== null && memories.length < total && (
               <div className="load-more-row">
                 <button className="load-more-btn" onClick={loadMore} disabled={loadingMore}>
                   {loadingMore ? <span className="load-more-spinner" /> : 'Load more'}
