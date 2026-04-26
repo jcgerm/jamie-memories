@@ -8,21 +8,43 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 export default function KidsGalleryPage() {
   const [memories, setMemories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [offset, setOffset] = useState(0)
   const [error, setError] = useState(null)
   const [expanded, setExpanded] = useState({})
 
+  const PAGE_SIZE = 10
+
   const loadMemories = (showLoading = true) => {
     if (showLoading) setLoading(true)
-    fetch('/api/gallery-kids', { cache: 'no-store' })
+    fetch(`/api/gallery-kids?limit=${PAGE_SIZE}&offset=0`, { cache: 'no-store' })
       .then(r => r.json())
       .then(data => {
-        setMemories(Array.isArray(data) ? data : [])
+        const items = Array.isArray(data) ? data : []
+        setMemories(items)
+        setOffset(items.length)
+        setHasMore(items.length === PAGE_SIZE)
         if (showLoading) setLoading(false)
       })
       .catch(() => {
         setError('Could not load memories. Please try again.')
         if (showLoading) setLoading(false)
       })
+  }
+
+  const loadMore = () => {
+    setLoadingMore(true)
+    fetch(`/api/gallery-kids?limit=${PAGE_SIZE}&offset=${offset}`, { cache: 'no-store' })
+      .then(r => r.json())
+      .then(data => {
+        const items = Array.isArray(data) ? data : []
+        setMemories(prev => [...prev, ...items])
+        setOffset(prev => prev + items.length)
+        setHasMore(items.length === PAGE_SIZE)
+        setLoadingMore(false)
+      })
+      .catch(() => setLoadingMore(false))
   }
 
   useEffect(() => {
@@ -41,8 +63,13 @@ export default function KidsGalleryPage() {
   const formatDate = (iso) =>
     new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
+  const [photoExpanded, setPhotoExpanded] = useState({})
+
   const toggleExpand = (id) =>
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+
+  const togglePhotoExpand = (id) =>
+    setPhotoExpanded(prev => ({ ...prev, [id]: true }))
 
   const getVideoEmbedUrl = (link) => {
     if (!link) return null
@@ -72,10 +99,23 @@ export default function KidsGalleryPage() {
 
       <main className="gallery-main">
         {loading && (
-          <div className="gallery-loading">
-            <div className="gallery-loading-dots">
-              <span /><span /><span />
-            </div>
+          <div className="feed">
+            {[0, 1, 2].map(i => (
+              <div key={i} className="feed-card feed-skeleton">
+                <div className="skeleton-header">
+                  <div className="skeleton-avatar" />
+                  <div className="skeleton-meta">
+                    <div className="skeleton-line skeleton-name" />
+                    <div className="skeleton-line skeleton-rel" />
+                  </div>
+                </div>
+                <div className="skeleton-body">
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line skeleton-short" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -117,18 +157,28 @@ export default function KidsGalleryPage() {
                     )}
                   </div>
 
-                  {m.photo_paths?.length > 0 && (
-                    <div className={`feed-photos count-${Math.min(m.photo_paths.length, 4)}`}>
-                      {m.photo_paths.slice(0, 4).map((path, i) => (
-                        <a key={i} href={getPhotoUrl(path)} target="_blank" rel="noreferrer" className="feed-photo-link">
-                          <img src={getPhotoUrl(path)} alt="" className="feed-photo" loading="lazy" />
-                          {i === 3 && m.photo_paths.length > 4 && (
-                            <div className="feed-photo-more">+{m.photo_paths.length - 4}</div>
-                          )}
-                        </a>
-                      ))}
-                    </div>
-                  )}
+                  {m.photo_paths?.length > 0 && (() => {
+                    const isPhotoExpanded = photoExpanded[m.id]
+                    const visiblePhotos = isPhotoExpanded ? m.photo_paths : m.photo_paths.slice(0, 4)
+                    const overflow = m.photo_paths.length - 4
+                    return (
+                      <div className={`feed-photos count-${Math.min(m.photo_paths.length, 4)}`}>
+                        {visiblePhotos.map((path, i) => (
+                          <a key={i} href={getPhotoUrl(path)} target="_blank" rel="noreferrer" className="feed-photo-link">
+                            <img src={getPhotoUrl(path)} alt="" className="feed-photo" loading="lazy" />
+                            {i === 3 && overflow > 0 && !isPhotoExpanded && (
+                              <div
+                                className="feed-photo-more"
+                                onClick={e => { e.preventDefault(); togglePhotoExpand(m.id) }}
+                              >
+                                +{overflow}
+                              </div>
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    )
+                  })()}
 
                   {m.video_uids?.length > 0 && (
                     <div className="feed-videos">
@@ -167,6 +217,13 @@ export default function KidsGalleryPage() {
                 </article>
               )
             })}
+            {hasMore && (
+              <div className="load-more-row">
+                <button className="load-more-btn" onClick={loadMore} disabled={loadingMore}>
+                  {loadingMore ? <span className="load-more-spinner" /> : 'Load more'}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
