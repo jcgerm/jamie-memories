@@ -410,6 +410,23 @@
   background: rgba(61, 43, 31, 0.7);
 }
 
+.photo-collapse-btn {
+  display: block;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.photo-collapse-btn:hover {
+  color: var(--accent);
+}
+
 /* Videos */
 .feed-videos {
   display: flex;

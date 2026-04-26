@@ -41,7 +41,7 @@ export default function GalleryPage() {
         const items = Array.isArray(data) ? data : []
         setMemories(prev => [...prev, ...items])
         setOffset(prev => prev + items.length)
-        setHasMore(items.length === PAGE_SIZE)
+        setHasMore(items.length > 0 && items.length === PAGE_SIZE)
         setLoadingMore(false)
       })
       .catch(() => setLoadingMore(false))
@@ -69,7 +69,7 @@ export default function GalleryPage() {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
   const togglePhotoExpand = (id) =>
-    setPhotoExpanded(prev => ({ ...prev, [id]: true }))
+    setPhotoExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
   const getVideoEmbedUrl = (link) => {
     if (!link) return null
@@ -198,6 +198,11 @@ export default function GalleryPage() {
                       </div>
                     )
                   })()}
+                  {photoExpanded[m.id] && (
+                    <button className="photo-collapse-btn" onClick={() => togglePhotoExpand(m.id)}>
+                      Show fewer photos
+                    </button>
+                  )}
 
                   {/* Cloudflare Stream videos */}
                   {m.video_uids?.length > 0 && (

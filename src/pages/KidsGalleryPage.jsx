@@ -41,7 +41,7 @@ export default function KidsGalleryPage() {
         const items = Array.isArray(data) ? data : []
         setMemories(prev => [...prev, ...items])
         setOffset(prev => prev + items.length)
-        setHasMore(items.length === PAGE_SIZE)
+        setHasMore(items.length > 0 && items.length === PAGE_SIZE)
         setLoadingMore(false)
       })
       .catch(() => setLoadingMore(false))
@@ -69,7 +69,7 @@ export default function KidsGalleryPage() {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
   const togglePhotoExpand = (id) =>
-    setPhotoExpanded(prev => ({ ...prev, [id]: true }))
+    setPhotoExpanded(prev => ({ ...prev, [id]: !prev[id] }))
 
   const getVideoEmbedUrl = (link) => {
     if (!link) return null
@@ -179,6 +179,11 @@ export default function KidsGalleryPage() {
                       </div>
                     )
                   })()}
+                  {photoExpanded[m.id] && (
+                    <button className="photo-collapse-btn" onClick={() => togglePhotoExpand(m.id)}>
+                      Show fewer photos
+                    </button>
+                  )}
 
                   {m.video_uids?.length > 0 && (
                     <div className="feed-videos">
