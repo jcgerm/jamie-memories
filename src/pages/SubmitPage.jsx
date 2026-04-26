@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import * as tus from 'tus-js-client'
@@ -10,6 +10,17 @@ const MAX_PHOTO_BYTES = MAX_PHOTO_MB * 1024 * 1024
 
 function App() {
   usePageTitle('Share a Memory')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const navRef = useRef(null)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
   const [step, setStep] = useState('form') // form | uploading | success | error
   const [progress, setProgress] = useState(0)
   const [progressLabel, setProgressLabel] = useState('')
@@ -209,13 +220,23 @@ function App() {
   if (step === 'error') return <ErrorScreen message={errorMsg} onBack={() => setStep('form')} />
 
   return (
-    <div className="page">
-      <nav className="submit-nav">
+    <div className="submit-wrapper">
+      <nav className="submit-nav" ref={navRef}>
         <div className="submit-nav-inner">
           <Link to="/memories" className="nav-logo">Remembering Jamie</Link>
-          <Link to="/memories" className="nav-gallery-btn">View memories</Link>
+          <div className="nav-links">
+            <Link to="/memories" className="nav-gallery-btn">View memories</Link>
+            <button className={`nav-hamburger${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
+              {menuOpen ? '✕' : '☰'}
+            </button>
+          </div>
+        </div>
+        <div className={`nav-mobile-menu${menuOpen ? ' nav-mobile-menu--open' : ''}`}>
+          <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Celebration of life</a>
+          <a href="https://mcpsmd.schoolcashonline.com/Fee/Details/116448/354/False/True" target="_blank" rel="noreferrer" className="nav-mobile-link nav-mobile-link--donate" onClick={() => setMenuOpen(false)}>Donate to the Jamie Krusinski Softball Scholarship</a>
         </div>
       </nav>
+      <div className="page">
       <header className="hero">
         <div className="hero-ornament">✦</div>
         <h1 className="hero-title">Share a Memory</h1>
@@ -374,6 +395,7 @@ function App() {
       <footer className="page-footer">
         <p>Remembering Jamie · Made with love</p>
       </footer>
+      </div>
     </div>
   )
 }
