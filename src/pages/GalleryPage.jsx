@@ -4,13 +4,13 @@ import { Link } from 'react-router-dom'
 import './GalleryPage.css'
 import HeroPhoto from '../components/HeroPhoto'
 import Lightbox from '../components/Lightbox'
+import Nav from '../components/Nav'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 export default function GalleryPage() {
   usePageTitle(null)
-  const [menuOpen, setMenuOpen] = useState(false)
   const [memories, setMemories] = useState([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -21,7 +21,6 @@ export default function GalleryPage() {
   const [lightbox, setLightbox] = useState(null)
   const feedRef = useRef(null)
   const cardRefs = useRef({})
-  const navRef = useRef(null)
 
   const PAGE_SIZE = 10
 
@@ -94,15 +93,6 @@ export default function GalleryPage() {
   const prevPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index - 1 }))
   const nextPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index + 1 }))
 
-  useEffect(() => {
-    if (!menuOpen) return
-    const handler = (e) => {
-      if (navRef.current && !navRef.current.contains(e.target)) setMenuOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [menuOpen])
-
   // Fade-in observer
   useEffect(() => {
     const feed = feedRef.current
@@ -131,21 +121,7 @@ export default function GalleryPage() {
 
   return (
     <div className="gallery-page">
-      <nav className="gallery-nav" ref={navRef}>
-        <div className="gallery-nav-inner">
-          <Link to="/" className="nav-logo">Remembering Jamie</Link>
-          <div className="nav-links">
-            <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
-            <button className={`nav-hamburger${menuOpen ? ' open' : ''}`} onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
-              {menuOpen ? '✕' : '☰'}
-            </button>
-          </div>
-        </div>
-        <div className={`nav-mobile-menu${menuOpen ? ' nav-mobile-menu--open' : ''}`}>
-          <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Celebration of life</a>
-          <a href="https://mcpsmd.schoolcashonline.com/Fee/Details/116448/354/False/True" target="_blank" rel="noreferrer" className="nav-mobile-link nav-mobile-link--donate" onClick={() => setMenuOpen(false)}>Donate to the Jamie Krusinski Softball Scholarship</a>
-        </div>
-      </nav>
+      <Nav primaryAction={<Link to="/submit" className="nav-submit-btn">Share a memory</Link>} />
 
       <header className="gallery-hero">
         <HeroPhoto />
