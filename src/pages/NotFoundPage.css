@@ -1,0 +1,40 @@
+.notfound-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: var(--cream);
+  gap: 0.75rem;
+}
+
+.notfound-ornament {
+  font-size: 1.5rem;
+  color: var(--tan);
+  margin-bottom: 0.5rem;
+}
+
+.notfound-title {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-style: italic;
+  color: var(--dark-brown);
+  font-weight: 400;
+}
+
+.notfound-sub {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+.notfound-link {
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 0.5rem;
+}

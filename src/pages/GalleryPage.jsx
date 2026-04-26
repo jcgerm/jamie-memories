@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { flushSync } from 'react-dom'
 import { Link } from 'react-router-dom'
 import './GalleryPage.css'
 import HeroPhoto from '../components/HeroPhoto'
+import Lightbox from '../components/Lightbox'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 export default function GalleryPage() {
+  usePageTitle(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [memories, setMemories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -14,6 +18,9 @@ export default function GalleryPage() {
   const [offset, setOffset] = useState(0)
   const [error, setError] = useState(null)
   const [expanded, setExpanded] = useState({})
+  const [lightbox, setLightbox] = useState(null)
+  const feedRef = useRef(null)
+  const cardRefs = useRef({})
 
   const PAGE_SIZE = 10
 
@@ -70,6 +77,38 @@ export default function GalleryPage() {
 
   const togglePhotoExpand = (id) =>
     setPhotoExpanded(prev => ({ ...prev, [id]: !prev[id] }))
+
+  const collapsePhotos = (id) => {
+    flushSync(() => setPhotoExpanded(prev => ({ ...prev, [id]: false })))
+    const el = cardRefs.current[id]
+    if (!el) return
+    const nav = document.querySelector('.gallery-nav')
+    const offset = (nav ? nav.offsetHeight : 0) + 12
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - offset, behavior: 'instant' })
+  }
+
+  // Lightbox
+  const openLightbox = (photos, index) => setLightbox({ photos, index })
+  const closeLightbox = () => setLightbox(null)
+  const prevPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index - 1 }))
+  const nextPhoto = () => setLightbox(prev => ({ ...prev, index: prev.index + 1 }))
+
+  // Fade-in observer
+  useEffect(() => {
+    const feed = feedRef.current
+    if (!feed) return
+    const cards = feed.querySelectorAll('.feed-card')
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('feed-card--visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.05 })
+    cards.forEach(card => observer.observe(card))
+    return () => observer.disconnect()
+  }, [memories])
 
   const getVideoEmbedUrl = (link) => {
     if (!link) return null
@@ -144,7 +183,7 @@ export default function GalleryPage() {
         )}
 
         {!loading && !error && (
-          <div className="feed">
+          <div className="feed" ref={feedRef}>
             {memories.map(m => {
               const isLong = m.memory?.length > 400
               const isExpanded = expanded[m.id]
@@ -153,7 +192,7 @@ export default function GalleryPage() {
                 : m.memory
 
               return (
-                <article key={m.id} className="feed-card">
+                <article key={m.id} className="feed-card" ref={el => cardRefs.current[m.id] = el}>
                   <div className="feed-card-header">
                     <div className="feed-avatar">{getInitials(m.submitter_name)}</div>
                     <div className="feed-meta">
@@ -181,12 +220,10 @@ export default function GalleryPage() {
                     return (
                       <div className={`feed-photos count-${Math.min(m.photo_paths.length, 4)}`}>
                         {visiblePhotos.map((path, i) => (
-                          <a
+                          <div
                             key={i}
-                            href={getPhotoUrl(path)}
-                            target="_blank"
-                            rel="noreferrer"
                             className="feed-photo-link"
+                            onClick={() => openLightbox(m.photo_paths.map(getPhotoUrl), i)}
                           >
                             <img
                               src={getPhotoUrl(path)}
@@ -197,18 +234,18 @@ export default function GalleryPage() {
                             {i === 3 && overflow > 0 && !isPhotoExpanded && (
                               <div
                                 className="feed-photo-more"
-                                onClick={e => { e.preventDefault(); togglePhotoExpand(m.id) }}
+                                onClick={e => { e.stopPropagation(); togglePhotoExpand(m.id) }}
                               >
                                 +{overflow}
                               </div>
                             )}
-                          </a>
+                          </div>
                         ))}
                       </div>
                     )
                   })()}
                   {photoExpanded[m.id] && (
-                    <button className="photo-collapse-btn" onClick={() => togglePhotoExpand(m.id)}>
+                    <button className="photo-collapse-btn" onClick={() => collapsePhotos(m.id)}>
                       Show fewer photos
                     </button>
                   )}
@@ -271,6 +308,15 @@ export default function GalleryPage() {
         </Link>
         <p className="gallery-footer-note">Remembering Jamie · Made with love</p>
       </footer>
+    {lightbox && (
+      <Lightbox
+        photos={lightbox.photos}
+        index={lightbox.index}
+        onClose={closeLightbox}
+        onPrev={prevPhoto}
+        onNext={nextPhoto}
+      />
+    )}
     </div>
   )
 }

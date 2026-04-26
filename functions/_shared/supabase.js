@@ -27,7 +27,7 @@ export function supabaseClient(env) {
       if (options.limit != null) qs += `&limit=${options.limit}`
       if (options.offset != null) qs += `&offset=${options.offset}`
       const reqHeaders = options.count
-        ? { ...headers, 'Prefer': 'count=exact' }
+        ? { ...headers, 'Prefer': 'return=representation, count=exact' }
         : headers
       const res = await fetch(`${url}/rest/v1/${table}?${qs}`, { headers: reqHeaders })
       const data = await res.json()

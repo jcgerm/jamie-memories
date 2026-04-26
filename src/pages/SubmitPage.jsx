@@ -1,13 +1,15 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useDropzone } from 'react-dropzone'
 import * as tus from 'tus-js-client'
 import './SubmitPage.css'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const MAX_PHOTO_MB = 20
 const MAX_PHOTO_BYTES = MAX_PHOTO_MB * 1024 * 1024
 
 function App() {
+  usePageTitle('Share a Memory')
   const [step, setStep] = useState('form') // form | uploading | success | error
   const [progress, setProgress] = useState(0)
   const [progressLabel, setProgressLabel] = useState('')

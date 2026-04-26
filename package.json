@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:full": "wrangler pages dev --compatibility-date=2024-01-01 --proxy 5173",
     "build": "vite build",
     "preview": "vite preview"
   },
