@@ -123,7 +123,7 @@ export default function KidsGalleryPage() {
         <div className="kids-hero-ornament">✦</div>
         <h1 className="kids-hero-title">For Maya & Sadie</h1>
         <p className="kids-hero-sub">
-          These are memories written just for you — from people who loved your mom
+          These are memories written just for you — from people who love your mom
           and want you to know who she was.
         </p>
         {!loading && !error && (

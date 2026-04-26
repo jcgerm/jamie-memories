@@ -152,7 +152,7 @@ export default function GalleryPage() {
         <div className="gallery-hero-ornament">✦</div>
         <h1 className="gallery-hero-title">Memories</h1>
         <p className="gallery-hero-sub">
-          Stories, moments, and glimpses of who Jamie was — shared by the people who loved her.
+          Stories, moments, and glimpses of who Jamie was — shared by the people who love her.
         </p>
         {!loading && !error && (
           <p className="gallery-count">
