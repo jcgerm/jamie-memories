@@ -32,6 +32,32 @@
   text-decoration: none;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.nav-memorial-btn {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brown);
+  background: none;
+  border: 1px solid var(--border);
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.nav-memorial-btn:hover {
+  border-color: var(--tan);
+  color: var(--dark-brown);
+}
+
 .nav-submit-btn {
   font-family: var(--font-sans);
   font-size: 0.75rem;

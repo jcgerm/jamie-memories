@@ -84,7 +84,10 @@ export default function GalleryPage() {
       <nav className="gallery-nav">
         <div className="gallery-nav-inner">
           <Link to="/" className="nav-logo">Remembering Jamie</Link>
-          <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
+          <div className="nav-links">
+            <a href="https://www.sollevinson.com/memorials/jamie-krusinsky/5704663/" target="_blank" rel="noreferrer" className="nav-memorial-btn">Memorial service</a>
+            <Link to="/submit" className="nav-submit-btn">Share a memory</Link>
+          </div>
         </div>
       </nav>
 
