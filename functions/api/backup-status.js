@@ -1,4 +1,4 @@
-import { json, error } from '../_shared/supabase.js'
+import { supabaseClient, json, error } from '../_shared/supabase.js'
 
 export async function onRequestPost(context) {
   try {
@@ -19,12 +19,18 @@ export async function onRequestPost(context) {
     const manifestObj = await context.env.BACKUP.get('video-manifest.json')
     const manifest = manifestObj ? JSON.parse(await manifestObj.text()) : []
 
+    // Count photos from DB
+    const db = supabaseClient(context.env)
+    const submissions = await db.select('submissions', {}, 'photo_paths')
+    const photoCount = submissions.reduce((sum, s) => sum + (s.photo_paths?.length ?? 0), 0)
+
     const lastBackup = index.length > 0 ? index[0].backed_up_at : null
 
     return json({
       available: true,
       submissionCount: index.length,
       videoCount: manifest.length,
+      photoCount,
       lastBackedUpAt: lastBackup,
       lastSubmitterName: index.length > 0 ? index[0].submitter_name : null,
     })

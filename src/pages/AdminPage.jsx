@@ -289,6 +289,9 @@ export default function AdminPage() {
                 {backupStatus.lastSubmitterName ? ` · ${backupStatus.lastSubmitterName}` : ''}
               </p>
             )}
+            {backupStatus.photoCount > 0 && (
+              <p className="backup-date">{backupStatus.photoCount} photo{backupStatus.photoCount !== 1 ? 's' : ''}</p>
+            )}
             {backupStatus.videoCount > 0 && (
               <p className="backup-date">{backupStatus.videoCount} video{backupStatus.videoCount !== 1 ? 's' : ''} in manifest</p>
             )}
